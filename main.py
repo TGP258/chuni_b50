@@ -176,14 +176,62 @@ class MusicGameScoreRenderer:
         # 计算需要生成多少张图片
         total_pages = (len(df) + self.config.ITEMS_PER_PAGE - 1) // self.config.ITEMS_PER_PAGE
 
+        # for page in range(total_pages):
+        #     # 创建一张新的组合图片 (50条数据，每行5个，共10行)
+        #     composite_image = Image.new(
+        #         'RGB',
+        #         (self.config.OUTPUT_IMAGE_SIZE[0] * 5,  # 5列
+        #          self.config.OUTPUT_IMAGE_SIZE[1] * 10),  # 10行
+        #         (40, 40, 50)
+        #     )
+        #
+        #     # 获取当前页的数据
+        #     start_idx = page * self.config.ITEMS_PER_PAGE
+        #     end_idx = min((page + 1) * self.config.ITEMS_PER_PAGE, len(df))
+        #     page_data = df.iloc[start_idx:end_idx]
+        #
+        #     for i, (_, row) in enumerate(page_data.iterrows()):
+        #         # 渲染单张成绩卡片
+        #         card = self.render_score_card(row.to_dict())
+        #
+        #         # 计算卡片的行列位置
+        #         row_num = i // 5  # 每行5个
+        #         col_num = i % 5  # 当前列
+        #
+        #         # 计算卡片的偏移量
+        #         x_offset = col_num * self.config.OUTPUT_IMAGE_SIZE[0]
+        #         y_offset = row_num * self.config.OUTPUT_IMAGE_SIZE[1]
+        #
+        #         # 将卡片粘贴到组合图片上
+        #         composite_image.paste(card, (x_offset, y_offset))
+        #
+        #     # 保存组合图片
+        #     output_path = os.path.join(
+        #         self.config.OUTPUT_DIR,
+        #         f"{output_prefix}_page_{page + 1}.jpg"
+        #     )
+        #     composite_image.save(output_path, quality=self.config.OUTPUT_QUALITY)
+        #     print(f"已生成成绩图片: {output_path} (包含{end_idx - start_idx}条记录)")
+
+
         for page in range(total_pages):
-            # 创建一张新的组合图片 (50条数据，每行5个，共10行)
-            composite_image = Image.new(
-                'RGB',
-                (self.config.OUTPUT_IMAGE_SIZE[0] * 5,  # 5列
-                 self.config.OUTPUT_IMAGE_SIZE[1] * 10),  # 10行
-                (40, 40, 50)
-            )
+            # 加载背景板
+            try:
+                plate_path = os.path.join(self.config.TEMPLATE_DIR, 'plate.png')
+                composite_image = Image.open(plate_path).convert('RGB')
+
+                # 如果背景板尺寸不够大，则调整大小
+                required_width = self.config.OUTPUT_IMAGE_SIZE[0] * 5
+                required_height = self.config.OUTPUT_IMAGE_SIZE[1] * 7
+                if composite_image.size != (required_width, required_height):
+                    composite_image = composite_image.resize((required_width, required_height))
+            except Exception as e:
+                print(f"无法加载背景板，使用默认背景: {e}")
+                composite_image = Image.new(
+                    'RGB',
+                    (required_width, required_height),
+                    (40, 40, 50)
+                )
 
             # 获取当前页的数据
             start_idx = page * self.config.ITEMS_PER_PAGE
@@ -194,16 +242,18 @@ class MusicGameScoreRenderer:
                 # 渲染单张成绩卡片
                 card = self.render_score_card(row.to_dict())
 
-                # 计算卡片的行列位置
-                row_num = i // 5  # 每行5个
-                col_num = i % 5  # 当前列
+                # 计算粘贴位置 (5列10行布局)
+                col = i % 5
+                row = i // 5
+                x_offset = col * self.config.OUTPUT_IMAGE_SIZE[0]
+                y_offset = row * self.config.OUTPUT_IMAGE_SIZE[1]
 
-                # 计算卡片的偏移量
-                x_offset = col_num * self.config.OUTPUT_IMAGE_SIZE[0]
-                y_offset = row_num * self.config.OUTPUT_IMAGE_SIZE[1]
-
-                # 将卡片粘贴到组合图片上
-                composite_image.paste(card, (x_offset, y_offset))
+                # 将卡片粘贴到组合图片上（使用alpha通道混合）
+                if card.mode == 'RGBA':
+                    # 如果卡片有透明通道，使用alpha混合
+                    composite_image.paste(card, (x_offset, y_offset), card)
+                else:
+                    composite_image.paste(card, (x_offset, y_offset))
 
             # 保存组合图片
             output_path = os.path.join(
@@ -212,7 +262,6 @@ class MusicGameScoreRenderer:
             )
             composite_image.save(output_path, quality=self.config.OUTPUT_QUALITY)
             print(f"已生成成绩图片: {output_path} (包含{end_idx - start_idx}条记录)")
-
 
 if __name__ == "__main__":
     renderer = MusicGameScoreRenderer()
