@@ -2,12 +2,14 @@ import os
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 from config import Config
-
+import time
 
 class MusicGameScoreRenderer:
     def __init__(self):
         self.config = Config()
         self._ensure_dirs()
+        # 预加载字体
+        self.font_cache = {}
 
     def _ensure_dirs(self):
         """确保所需目录存在"""
@@ -15,24 +17,61 @@ class MusicGameScoreRenderer:
         os.makedirs(self.config.TEMPLATE_DIR, exist_ok=True)
         os.makedirs(os.path.dirname(self.config.CSV_PATH), exist_ok=True)
 
+    def _get_font(self, font_name, font_size):
+        """获取字体对象，带缓存"""
+        cache_key = f"{font_name}_{font_size}"
+        if cache_key not in self.font_cache:
+            try:
+                font_path = os.path.join(self.config.FONT_DIR, font_name)
+                if os.path.exists(font_path):
+                    self.font_cache[cache_key] = ImageFont.truetype(font_path, font_size)
+                else:
+                    # 尝试使用系统回退字体
+                    self.font_cache[cache_key] = ImageFont.truetype("arialuni.ttf", font_size)
+            except:
+                # 最终回退到默认字体
+                self.font_cache[cache_key] = ImageFont.load_default()
+        return self.font_cache[cache_key]
+    # 这一块是0.0.1版的
+    # def load_data(self, csv_path: str = None) -> pd.DataFrame:
+    #     """加载CSV数据"""
+    #     path = csv_path or self.config.CSV_PATH
+    #     try:
+    #         # 读取CSV，跳过标题行后的第一行(因为START_ROW=2表示从第2行开始)
+    #         df = pd.read_csv(path, skiprows=1, nrows=self.config.END_ROW - 1)
+    #
+    #         # 重新设置列名(因为skiprows=1会丢失原列名)
+    #         df.columns = [
+    #             'id', 'song_name', 'level', 'level_index', 'score', 'rating',
+    #             'over_power', 'clear', 'full_combo', 'full_chain', 'rank',
+    #             'upload_time', 'play_time'
+    #         ]
+    #
+    #         return df
+    #     except Exception as e:
+    #         raise Exception(f"无法加载CSV文件: {e}")
     def load_data(self, csv_path: str = None) -> pd.DataFrame:
-        """加载CSV数据"""
+        """加载CSV数据，确保正确处理中文编码"""
         path = csv_path or self.config.CSV_PATH
         try:
-            # 读取CSV，跳过标题行后的第一行(因为START_ROW=2表示从第2行开始)
-            df = pd.read_csv(path, skiprows=1, nrows=self.config.END_ROW - 1)
-
-            # 重新设置列名(因为skiprows=1会丢失原列名)
-            df.columns = [
-                'id', 'song_name', 'level', 'level_index', 'score', 'rating',
-                'over_power', 'clear', 'full_combo', 'full_chain', 'rank',
-                'upload_time', 'play_time'
-            ]
-
-            return df
+            # 尝试多种编码方式
+            encodings = ['utf-8', 'shift_jis', 'gbk', 'big5']
+            for encoding in encodings:
+                try:
+                    df = pd.read_csv(path, skiprows=1, nrows=self.config.END_ROW - 1, encoding=encoding)
+                    df.columns = [
+                        'id', 'song_name', 'level', 'level_index', 'score', 'rating',
+                        'over_power', 'clear', 'full_combo', 'full_chain', 'rank',
+                        'upload_time', 'play_time'
+                    ]
+                    return df
+                except UnicodeDecodeError:
+                    continue
+            raise ValueError("无法确定CSV文件的编码，尝试过的编码: " + ", ".join(encodings))
         except Exception as e:
             raise Exception(f"无法加载CSV文件: {e}")
 
+    start_time = time.time()
     def render_score_card(self, data: dict, template_name: str = None) -> Image.Image:
         """渲染单张成绩卡片"""
         # 加载模板图片
@@ -45,12 +84,14 @@ class MusicGameScoreRenderer:
             if os.path.exists(template_path):
                 image = Image.open(template_path)
             else:
-                # 如果没有模板，创建一个深色背景图片
-                image = Image.new('RGB', self.config.OUTPUT_IMAGE_SIZE, color=(30, 30, 40))
+                # 如果没有模板，创建一个蓝白色背景图片
+                image = Image.new('RGB', self.config.OUTPUT_IMAGE_SIZE, color=(248, 248, 255))
         except Exception as e:
             raise Exception(f"无法加载模板图片: {e}")
 
         draw = ImageDraw.Draw(image)
+        # 转换难度
+
 
         # 绘制每个配置的字段
         for field, config in self.config.DRAW_CONFIG.items():
@@ -60,21 +101,33 @@ class MusicGameScoreRenderer:
 
                 # 特殊字段处理
                 if field == 'level':
-                    value = f"Lv.{data['level']}+{data.get('level_index', 0)}"
+                    value = f"Lv.{data['level']}"
                 elif field == 'clear' and data[field] == 'clear':
                     value = "CLEAR"
                 elif field == 'full_combo' and data[field] == 'fullcombo':
                     value = "FULL COMBO"
-
+                elif field == 'level_index':
+                    level_mapping = {
+                        0: "BASIC",
+                        1: "ADVANCED",
+                        2: "EXPERT",
+                        3: "MASTER",
+                        4: "ULTRA"
+                    }
+                    value = level_mapping.get(data[field], str(data[field]))
                 # 加载字体
+
                 try:
                     if font_path:
                         font = ImageFont.truetype(font_path, font_size)
+                        print(font_size)
                     else:
                         font = ImageFont.load_default()
+                        print('未找到字体！请检查font目录')
                 except:
                     font = ImageFont.load_default()
-
+                    print('异常！未找到字体！请检查font目录',font_path)
+                    pass
                 # 绘制文本
                 draw.text((x, y), value, fill=color, font=font)
 
