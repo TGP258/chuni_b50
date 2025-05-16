@@ -1,3 +1,5 @@
 pillow==10.0.0
 pandas==2.0.3
 opencv-python==4.8.0.76
+requests~=2.32.3
+PyMySQL~=1.1.1

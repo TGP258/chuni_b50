@@ -3,13 +3,14 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
 from config import Config
 import time
-
+import requests
 class MusicGameScoreRenderer:
     def __init__(self):
         self.config = Config()
         self._ensure_dirs()
         # 预加载字体
         self.font_cache = {}
+
 
     def _ensure_dirs(self):
         """确保所需目录存在"""
