@@ -115,7 +115,7 @@ if __name__ == "__main__":
         'host': 'localhost',#访问服务器主机
         'port': 3308, #默认为3306#
         'user': 'your_name',#数据库用户名
-        'password': 'your_passward',#数据库密码
+        'password': 'your_password',#数据库密码
         'database': 'chunithm_db',#数据库名
         'auth_plugin' : 'mysql_native_password',#旧版本验证，不需要可删
         'init_command' : 'SET time_zone = "+8:00"'#时区设置，不需要可删
