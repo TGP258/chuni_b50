@@ -1,11 +1,18 @@
+import os
+
 import requests
 import sys
 import io
 import json
 from typing import List, Dict
 
+import config
+
+# from config import DATA_DIR
+
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-url = "https://www.diving-fish.com/api/chunithmprober/music_data"
+# url = "https://www.diving-fish.com/api/chunithmprober/music_data"
+url = 'http://localhost:3000/api'
 response = requests.get(url)
 data = response.json()
 if response.status_code == 200:
@@ -23,7 +30,7 @@ else:
     print(f"请求失败，状态码: {response.status_code}")
 
 
-def convert_api_data_to_json(api_data: List[Dict], output_file: str) -> None:
+def convert_api_data_to_json(api_data: List[Dict], output_file:data) -> None:
     """
     将 API 返回的 Python 字典数据转换为标准 JSON 文件
 
@@ -77,9 +84,13 @@ def validate_api_data(api_data: List[Dict]) -> bool:
 def main():
     api_data =data
     # 输出文件路径
-    output_json = 'music_data.json'
+    # 使用导入的DATA_DIR变量构建完整路径
+    output_json = os.path.join(config.Config.DATA_DIR, 'music_data.json')
 
-    # 转换为 JSON 文件
+    # 转换为JSON文件
     convert_api_data_to_json(api_data, output_json)
+    # output_json='music_data.json'
+    # # 转换为 JSON 文件
+    # convert_api_data_to_json(api_data, output_json)
 if __name__ == "__main__":
     main()

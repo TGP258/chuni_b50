@@ -8,7 +8,11 @@ class Config:
     CSV_PATH = os.path.join(BASE_DIR, 'data', 'input.csv')
     TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
     OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
-
+    FONT_DIR = os.path.join(BASE_DIR, 'fonts')
+    DATA_DIR = os.path.join(BASE_DIR, 'data')
+    font_name =os.path.join(FONT_DIR, 'NotoSansCJK-Regular.ttc')
+    font_path = os.path.join(FONT_DIR, font_name)
+    # print(FONT_DIR)
     # 默认使用哪个模板
     # 单曲背板
     DEFAULT_TEMPLATE = 'background.png'
@@ -21,20 +25,20 @@ class Config:
     # CSV列名映射到绘制位置的配置
     # 格式: {'csv_column': (x, y, font_size, color, font_path)}
     DRAW_CONFIG = {
-        'song_name': (100, 50, 30, (255, 255, 255), 'NotoSansCJK-Regular.ttc'),
-        'level': (100, 100, 20, (255, 255, 0), 'NotoSansCJK-Regular.ttc'),
+        'song_name': (100, 50, 30, (255, 255, 255), font_name),
+        'level': (100, 100, 20, (255, 255, 0), font_name),
         'level_index': (150, 80, 28, (255, 255, 0), None),
-        'score': (100, 150, 20, (255, 255, 255), 'NotoSansCJK-Regular.ttc'),
-        'rating': (100, 200, 20, (0, 255, 255), 'NotoSansCJK-Regular.ttc'),
-        'rank': (100, 250, 40, (255, 215, 0), 'NotoSansCJK-Regular.ttc'),
-        'clear': (300, 100, 20, (0, 255, 0), 'NotoSansCJK-Regular.ttc'),
-        'full_combo': (270, 150, 20, (0, 255, 0), 'NotoSansCJK-Regular.ttc'),
-        'play_time': (300, 200, 20, (200, 200, 200), 'NotoSansCJK-Regular.ttc')
+        'score': (100, 150, 20, (255, 255, 255), font_name),
+        'rating': (100, 200, 20, (0, 255, 255), font_name),
+        'rank': (100, 250, 40, (255, 215, 0), font_name),
+        'clear': (300, 100, 20, (0, 255, 0), font_name),
+        'full_combo': (270, 150, 20, (0, 255, 0), font_name),
+        'play_time': (300, 200, 20, (200, 200, 200), font_name)
     }
 
 
     # 图片输出配置
-    FONT_DIR = os.path.join(BASE_DIR, 'font')
+    # FONT_DIR = os.path.join(BASE_DIR, 'font')
     #字体配置
     OUTPUT_IMAGE_SIZE = (400, 200)  # 输出图片尺寸
     OUTPUT_QUALITY = 95  # 输出图片质量(1-100)
