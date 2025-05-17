@@ -7,7 +7,7 @@
 
 本项目可以直接从水鱼API [diving-fish.com/api/chunithmprober/music_data](https://www.diving-fish.com/api/chunithmprober/music_data)拉取乐曲数据到数据库。
 
-> Tips：由于本项目为开发状态，暂时使用了本地搭建的API服务器，可在getAPI.py中修改，或详见我的另一个项目自行搭建本地服务器
+> Tips：由于本项目为开发状态，暂时使用了本地搭建的API服务器，可在getAPI.py中修改，或详见我的另一个项目自行搭建本地服务器(https://github.com/TGP258/LocalAPIServer)
 
 手动执行getAPI.py拉取API所给字典并转换为 json。　
 
