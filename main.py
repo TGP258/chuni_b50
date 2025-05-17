@@ -103,7 +103,7 @@ class MusicGameScoreRenderer:
                         4: "ULTRA"
                     }
                     value = level_mapping.get(data[field], str(data[field]))
-                # 加载字体
+                # 加载字体　
 
                 try:
                     if font_path:

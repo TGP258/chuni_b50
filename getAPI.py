@@ -5,7 +5,6 @@ import sys
 import io
 import json
 from typing import List, Dict
-
 import config
 
 # from config import DATA_DIR

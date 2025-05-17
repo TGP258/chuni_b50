@@ -12,7 +12,7 @@ class Config:
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     font_name =os.path.join(FONT_DIR, 'NotoSansCJK-Regular.ttc')
     font_path = os.path.join(FONT_DIR, font_name)
-    # print(FONT_DIR)
+
     # 默认使用哪个模板
     # 单曲背板
     DEFAULT_TEMPLATE = 'background.png'
